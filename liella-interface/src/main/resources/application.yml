@@ -1,0 +1,10 @@
+server:
+    port: 8123
+    servlet:
+        # 指定全局接口地址前缀
+        context-path: /api
+liella:
+    client:
+        access-key: ll
+        secretKey: abcdefg
+

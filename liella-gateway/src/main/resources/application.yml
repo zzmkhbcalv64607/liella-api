@@ -1,0 +1,50 @@
+server:
+    port: 8090
+#spring:
+#    cloud:
+#        gateway:
+#            routes:
+#                - id: after_route
+#                  uri: https://yupi.icu
+#                  predicates:
+#                      - After=2017-01-20T17:42:47.789-07:00[America/Denver]
+##                - id: before_route
+##                  uri: https://yupi.icu
+##                  predicates:
+##                      - Before=2017-01-20T17:42:47.789-07:00[America/Denver]
+spring:
+    cloud:
+        gateway:
+            default-filters:
+              - AddResponseHeader=source,yupi
+            routes:
+              - id: api_route
+                uri: http://localhost:8123
+                predicates:
+                  - Path=/api/**
+#                - id: path_route
+#                  uri: https://yupi.icu
+#                  predicates:
+#                      - Path=/api/**
+#                - id: path_route2
+#                  uri: https://baidu.com
+#                  predicates:
+#                      - Path=/liella/**
+
+dubbo:
+  application:
+    name: dubbo-consumer
+  protocol:
+    name: dubbo
+    port: 22223
+  registry:
+    id: dubbo-registry
+    address: nacos://localhost:8848
+
+
+logging:
+    level:
+      org:
+        springframework:
+          cloud:
+            gateway: trace
