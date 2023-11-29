@@ -45,6 +45,8 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
 
 
 
+
+
     private static  final List<String> IP_WHILE_LIST = Arrays.asList("127.0.0.1");
     private static final String INTERFACE_HOST="http://localhost:8123";
     @Override
@@ -137,7 +139,10 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         }
 
         // todo 是否有调用次数
-
+        int invokeCount = innerInterfaceInfoService.getInvokeCount(interfaceInfo.getId());
+        if (invokeCount<=0){
+            return handleNoAuth(response);
+        }
 
 
         return handdleResponse(exchange,chain,interfaceInfo.getId(),invokeUser.getId());
