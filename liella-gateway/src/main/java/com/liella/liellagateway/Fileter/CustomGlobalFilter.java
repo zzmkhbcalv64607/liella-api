@@ -40,11 +40,11 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
     private InnerUserService innerUserService;
     @DubboReference
     private InnerInterfaceInfoService innerInterfaceInfoService;
-    /**
-     * 远程调用
-     */
     @DubboReference
     private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
+
+
+
     private static  final List<String> IP_WHILE_LIST = Arrays.asList("127.0.0.1");
     private static final String INTERFACE_HOST="http://localhost:8123";
     @Override

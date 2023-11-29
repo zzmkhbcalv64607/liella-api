@@ -2,8 +2,10 @@ package com.liella.project.service.impl.Inner;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.liella.liellacommon.model.entity.InterfaceInfo;
+import com.liella.liellacommon.model.entity.UserInterfaceInfo;
 import com.liella.liellacommon.service.InnerInterfaceInfoService;
 import com.liella.project.mapper.InterfaceInfoMapper;
+import com.liella.project.mapper.UserInterfaceInfoMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 
@@ -16,8 +18,24 @@ import javax.annotation.Resource;
 @DubboService
 public class InnerInterfaceInfoServiceImpl implements InnerInterfaceInfoService {
 
-   @Resource
+    @Resource
     private InterfaceInfoMapper interfaceInfoMapper;
+    @Resource
+    private UserInterfaceInfoMapper userInterfaceInfoMapper;
+
+    /**
+     * 从数据库中查询接口次数
+     * @param interfaceInfoId
+     * @return
+     */
+    @Override
+    public int getInvokeCount(long interfaceInfoId) {
+        if (interfaceInfoId <= 0){
+            throw new RuntimeException("interfaceInfoId is null");
+        }
+        UserInterfaceInfo userInterfaceInfo = userInterfaceInfoMapper.selectById(interfaceInfoId);
+        return userInterfaceInfo.getLeftNum();
+    }
 
     /**
      * 从数据库中查询接口是否存在(请求路劲，请求方法)
