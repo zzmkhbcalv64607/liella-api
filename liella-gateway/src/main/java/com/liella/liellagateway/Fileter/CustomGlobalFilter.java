@@ -1,7 +1,13 @@
 package com.liella.liellagateway.Fileter;
 
 import com.liella.liellaclientsdk.utils.SignUtils;
+import com.liella.liellacommon.model.entity.InterfaceInfo;
+import com.liella.liellacommon.model.entity.User;
+import com.liella.liellacommon.service.InnerInterfaceInfoService;
+import com.liella.liellacommon.service.InnerUserInterfaceInfoService;
+import com.liella.liellacommon.service.InnerUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -11,6 +17,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -28,9 +35,18 @@ import java.util.List;
 @Slf4j
 @Component //扫描
 public class CustomGlobalFilter implements GlobalFilter, Ordered {
+
+    @DubboReference
+    private InnerUserService innerUserService;
+    @DubboReference
+    private InnerInterfaceInfoService innerInterfaceInfoService;
+    /**
+     * 远程调用
+     */
+    @DubboReference
+    private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
     private static  final List<String> IP_WHILE_LIST = Arrays.asList("127.0.0.1");
-//    @Autowired
-//    private InnerUserInterfaceInfoService innerUserInterfaceInfoService;
+    private static final String INTERFACE_HOST="http://localhost:8123";
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         //TODO 全局请求拦截
@@ -49,6 +65,10 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         //请求日志
         //获取请求对象
         ServerHttpRequest request = exchange.getRequest();
+        //获取路径
+        String path = INTERFACE_HOST+request.getPath().value();
+        //获取方法
+        String method = request.getMethod().toString();
         log.info("请求的唯一标识"+request.getId());
         log.info("请求的路劲"+request.getPath().value());
         log.info("请求的唯一方法"+request.getMethod());
@@ -70,9 +90,21 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         String timestamp =   headers.getFirst("timestamp");
         String sign = headers.getFirst("sign");
         String body =   headers.getFirst("body");
-        if (!accessKey.equals("ll")){
+        //TODO 从数据库中获取sk,ak
+        User invokeUser =null;
+        try {
+           invokeUser = innerUserService.getInvokeUser(accessKey);
+        }catch (Exception e){
+            log.error("as获取错误",e);
+        }
+        //判断是否为空
+        if (invokeUser==null){
             return handleNoAuth(response);
         }
+
+        //        if (!accessKey.equals("ll")){
+        //            return handleNoAuth(response);
+        //        }
 
         if (Long.parseLong(nonce)>10000){
           return   handleNoAuth(response) ;
@@ -86,29 +118,29 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         }
 
         //实际情况是从数据库中查询sk
-        String gennedSign = SignUtils.genSign(body, "abcdefg");
-        if (!sign.equals(gennedSign)){
+        String secretKey = invokeUser.getSecretKey();
+        String gennedSign = SignUtils.genSign(body, secretKey);
+        if (sign==null || !sign.equals(gennedSign)){
             throw new RuntimeException("sign错误");
         }
         //请求模拟接口是否存在
         // todo 从数据库查询接口是否存在 以及请求方法是否匹配 校验请求参数
+        InterfaceInfo interfaceInfo = null;
+        try {
+            interfaceInfo = innerInterfaceInfoService.getInterfaceInfo(path, method);;
+        }catch (Exception e){
+            log.error("接口错误",e);
+        }
 
-        // 请求转发 调用模拟接口
-//        Mono<Void> filter = chain.filter(exchange);
-//        // 响应日志
-//        log.info("响应"+response.getStatusCode());
-//
-//
-       // todo 调用成功 接口调用次数+1
-        // 调用失败 返回一个规范的错误码
-//        if (response.getStatusCode() == HttpStatus.OK){
-//
-//        }else {
-//            return handleInvokeError(response);
-//        }
-//        log.info("custom global filter");
-//        return filter;
-        return handdleResponse(exchange,chain);
+        if (interfaceInfo==null){
+            return handleNoAuth(response);
+        }
+
+        // todo 是否有调用次数
+
+
+
+        return handdleResponse(exchange,chain,interfaceInfo.getId(),invokeUser.getId());
     }
 
     @Override
@@ -124,7 +156,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
      * @param chain
      * @return
      */
-    public Mono<Void> handdleResponse(ServerWebExchange exchange, GatewayFilterChain chain){
+    public Mono<Void> handdleResponse(ServerWebExchange exchange, GatewayFilterChain chain,long interfaceInfoId,long userId){
         try {
             //获取响应对象
             ServerHttpResponse originalResponse = exchange.getResponse();
@@ -146,11 +178,11 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                             //往返回结果中写入数据
                             return super.writeWith(fluxBody.map(dataBuffer -> {
                                 // 7. 调用成功，接口调用次数 + 1 invokeCount
-//                                try {
-//                                    innerUserInterfaceInfoService.invokeCount(interfaceInfoId, userId);
-//                                } catch (Exception e) {
-//                                    log.error("invokeCount error", e);
-//                                }
+                                try {
+                                    innerUserInterfaceInfoService.invokeCount(interfaceInfoId, userId);
+                                } catch (Exception e) {
+                                    log.error("invokeCount error", e);
+                                }
 
                                 byte[] content = new byte[dataBuffer.readableByteCount()];
                                 dataBuffer.read(content);

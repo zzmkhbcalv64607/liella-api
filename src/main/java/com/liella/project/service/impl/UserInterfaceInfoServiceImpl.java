@@ -49,9 +49,9 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
         }
         //使用updateWrapper封装查询条件
         UpdateWrapper<UserInterfaceInfo> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("user_id",userId);
-        updateWrapper.eq("interface_info_id",interfaceInfoId);
-        updateWrapper.setSql("left_num=left_num-1,total_num=total_num+1");
+        updateWrapper.eq("interfaceInfoId", interfaceInfoId);
+        updateWrapper.eq("userId", userId);
+        updateWrapper.setSql("leftNum = leftNum - 1, totalNum = totalNum + 1");
         //用户可能会瞬间调用大量接口次数，为了避免统计出错，需要涉及到事务和锁的知识
         return this.update(updateWrapper);
     }

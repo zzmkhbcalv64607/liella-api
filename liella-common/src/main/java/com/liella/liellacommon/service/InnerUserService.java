@@ -15,10 +15,10 @@ import javax.servlet.http.HttpServletRequest;
 public interface InnerUserService  {
     /**
      * 数据库中查是否分配给该用户密钥（accessKey,secreKey,布尔）
+
      * @param accessKey
-     * @param secretKey
      * @return
      */
-    User getInvokeUser(String accessKey, String secretKey);
+    User getInvokeUser(String accessKey);
 
 }

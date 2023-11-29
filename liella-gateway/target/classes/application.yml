@@ -22,6 +22,9 @@ spring:
                 uri: http://localhost:8123
                 predicates:
                   - Path=/api/**
+
+    main:
+       web-application-type: reactive
 #                - id: path_route
 #                  uri: https://yupi.icu
 #                  predicates:

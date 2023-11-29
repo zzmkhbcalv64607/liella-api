@@ -8,6 +8,8 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/liella-interface/pom.xml" />
+        <option value="$PROJECT_DIR$/liella-common/pom.xml" />
       </list>
     </option>
   </component>
