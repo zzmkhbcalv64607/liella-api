@@ -139,7 +139,15 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         }
 
         // todo 是否有调用次数
-        int invokeCount = innerInterfaceInfoService.getInvokeCount(interfaceInfo.getId());
+        int invokeCount = 0;
+        try {
+
+        invokeCount = innerInterfaceInfoService.getInvokeCount(invokeUser.getId());
+        }catch (Exception e){
+            log.error("接口错误",e);
+            return handleNoAuth(response);
+        }
+
         if (invokeCount<=0){
             return handleNoAuth(response);
         }

@@ -217,6 +217,23 @@ public class UserController {
     }
 
     /**
+     * 获取用户详细信息
+     * @param id
+     * @param request
+     * @return
+     */
+    @GetMapping("/get/detail")
+    public BaseResponse<UserGetRequest> getUserDetailById(int id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getById(id);
+        UserGetRequest userVO = new UserGetRequest();
+        BeanUtils.copyProperties(user, userVO);
+        return ResultUtils.success(userVO);
+    }
+
+    /**
      * 获取用户列表
      *
      * @param userQueryRequest

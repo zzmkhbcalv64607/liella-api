@@ -36,18 +36,18 @@ public class NameController {
         String timestamp = request.getHeader("timestamp");
         String sign = request.getHeader("sign");
         String body = request.getHeader("body");
-        //这里应该从数据获取ak 进行对照
-        if (!accessKey.equals("ll")){
-            throw new RuntimeException("accessKey错误");
-        }
+//        //这里应该从数据获取ak 进行对照
+//        if (!accessKey.equals("ll")){
+//            throw new RuntimeException("accessKey错误");
+//        }
 
         if (Long.parseLong(nonce)>10000){
             throw new RuntimeException("nonce错误");
         }
-        String gennedSign = SignUtils.genSign(body, "abcdefg");
-        if (!sign.equals(gennedSign)){
-            throw new RuntimeException("sign错误");
-        }
+//        String gennedSign = SignUtils.genSign(body, "abcdefg");
+//        if (!sign.equals(gennedSign)){
+//            throw new RuntimeException("sign错误");
+//        }
         return "POST 用户名字是" + user.getUsername();
     }
 }
