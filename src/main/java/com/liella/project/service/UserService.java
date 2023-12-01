@@ -21,7 +21,7 @@ public interface UserService extends IService<User> {
      * @param checkPassword 校验密码
      * @return 新用户 id
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword);
+    long userRegister(String userAccount, String userPassword, String checkPassword,String userName);
 
     /**
      * 用户登录
@@ -56,4 +56,12 @@ public interface UserService extends IService<User> {
      * @return
      */
     boolean userLogout(HttpServletRequest request);
+
+    long userEmailRegister(String userAccount, String code, String userName);
+
+//    /**
+//     * 获取验证码
+//     * @return
+//     */
+//    String getCaptcha();
 }

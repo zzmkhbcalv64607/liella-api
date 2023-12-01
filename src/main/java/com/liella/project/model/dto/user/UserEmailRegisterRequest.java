@@ -10,15 +10,17 @@ import java.io.Serializable;
  * @author liella
  */
 @Data
-public class UserRegisterRequest implements Serializable {
+public class UserEmailRegisterRequest implements Serializable {
 
     private static final long serialVersionUID = 3191241716373120793L;
-
+    //昵称
     private String userName;
+    //邮箱
+    private String emailAccount;
+    //验证码
+    private String captcha;
+    //邀请码
+    private String invitationCode;
 
-    private String userAccount;
 
-    private String userPassword;
-
-    private String checkPassword;
 }

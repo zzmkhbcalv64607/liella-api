@@ -36,6 +36,7 @@ public class NameController {
         String timestamp = request.getHeader("timestamp");
         String sign = request.getHeader("sign");
         String body = request.getHeader("body");
+        //这里应该从数据获取ak 进行对照
         if (!accessKey.equals("ll")){
             throw new RuntimeException("accessKey错误");
         }

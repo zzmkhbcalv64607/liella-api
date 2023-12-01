@@ -12,6 +12,7 @@ import com.liella.project.mapper.UserMapper;
 import com.liella.project.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -28,9 +29,11 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
-
+    private static String CAPTCHA_CACHE_KEY = "captcha:";
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private RedisTemplate<String, String> redisTemplate;
 
     /**
      * 盐值，混淆密码
@@ -38,7 +41,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private static final String SALT = "liella";
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword,String userName) {
         // 1. 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
@@ -63,11 +66,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             }
             // 2. 加密
             String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+            // 用户需要知道自己的 ak sk
+            // 如何知晓呢
             // 3. 分配ak sk
             String accessKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(5));
             String secretKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(8));
             // 3. 插入数据
             User user = new User();
+            user.setUserName(userName);
             user.setAccessKey(accessKey);
             user.setSecretKey(secretKey);
             user.setUserAccount(userAccount);
@@ -159,6 +165,62 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 移除登录态
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return true;
+    }
+
+    /**
+     * 用户邮箱注册
+     * @param userAccount
+     * @param code
+     * @param userName
+     * @return
+     */
+    @Override
+    public long userEmailRegister(String userAccount, String code, String userName) {
+        // 1. 校验
+        if (StringUtils.isAnyBlank(userAccount, code, userName)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        if (userAccount.length() < 4) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
+        }
+        String RCode = redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY+ userAccount);
+        log.info("redis中的验证码为：{}",RCode,code);
+        if (RCode==null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码过期");
+        }
+        log.info("验证码为：{}",code);
+        if (!code.equals(RCode)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误");
+        }
+
+        synchronized (userAccount.intern()) {
+            // 账户不能重复
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("userAccount", userAccount);
+            long count = userMapper.selectCount(queryWrapper);
+            if (count > 0) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
+            }
+            // 2. 加密(默认密码)
+            String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userAccount).getBytes());
+            // 用户需要知道自己的 ak sk
+            // 如何知晓呢
+            // 3. 分配ak sk
+            String accessKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(5));
+            String secretKey = DigestUtil.md5Hex(SALT + userAccount + RandomUtil.randomNumbers(8));
+            // 3. 插入数据
+            User user = new User();
+            user.setUserName(userName);
+            user.setAccessKey(accessKey);
+            user.setSecretKey(secretKey);
+            user.setUserAccount(userAccount);
+            user.setUserPassword(encryptPassword);
+            boolean saveResult = this.save(user);
+            if (!saveResult) {
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
+            }
+            return user.getId();
+        }
     }
 
 }
