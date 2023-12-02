@@ -199,6 +199,44 @@ public class UserController {
     }
 
     /**
+     * 更新用户详细信息
+     * @param updateDetailRequest
+     * @return
+     */
+    @PostMapping("/update/detail")
+    public BaseResponse<Boolean> updateUserDetail(@RequestBody UpdateUserDetailRequest updateDetailRequest, HttpServletRequest request) {
+        if (updateDetailRequest == null || updateDetailRequest.getId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        User user = new User();
+        BeanUtils.copyProperties(updateDetailRequest, user);
+        Long id = updateDetailRequest.getId();
+
+        boolean result= userService.update(user, new QueryWrapper<User>().eq("id", id));
+        return ResultUtils.success(result);
+    }
+
+
+    /**
+     * 更新用户签名
+     *
+     * @param id
+     * @param request
+     * @return
+     */
+    @PostMapping("/update/aksk")
+    public BaseResponse<Boolean> updateAkSkUser(@RequestBody Long id, HttpServletRequest request) {
+        if (id == null||id<=0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        boolean result = userService.updateAk(id);
+        return ResultUtils.success(result);
+    }
+
+
+
+    /**
      * 根据 id 获取用户
      *
      * @param id

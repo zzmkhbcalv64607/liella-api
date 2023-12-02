@@ -223,6 +223,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
     }
 
+    /**
+     * 更改签名
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean updateAk(Long id) {
+        User user = this.getById(id);
+        if (user!=null){
+            String accessKey = DigestUtil.md5Hex(SALT + user.getUserAccount() + RandomUtil.randomNumbers(5));
+            String secretKey = DigestUtil.md5Hex(SALT + user.getUserAccount() + RandomUtil.randomNumbers(8));
+            user.setAccessKey(accessKey);
+            user.setSecretKey(secretKey);
+            return this.updateById(user);
+        }
+        return false;
+    }
+
 }
 
 

@@ -57,7 +57,21 @@ public interface UserService extends IService<User> {
      */
     boolean userLogout(HttpServletRequest request);
 
+    /**
+     * 邮箱注册
+     * @param userAccount
+     * @param code
+     * @param userName
+     * @return
+     */
     long userEmailRegister(String userAccount, String code, String userName);
+
+    /**
+     * 更改签名
+     * @param id
+     * @return
+     */
+    boolean updateAk(Long id);
 
 //    /**
 //     * 获取验证码
