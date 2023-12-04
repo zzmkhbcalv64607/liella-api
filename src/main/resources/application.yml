@@ -18,7 +18,7 @@ spring:
   redis:
     port: 6379
     host: 1.14.10.189
-    password: cys5sss520
+    password: cys521520
     database: 0
 server:
   port: 7529
@@ -52,12 +52,10 @@ dubbo:
     address: nacos://localhost:8848
 
 upload:
-  strategy: oss
-  local:
-    # nginx映射本地文件路径
-    url: http://localhost:32768/
-    # 本地文件存储路径
-    path: D:/DockerNginx/nginx/html/
   # oss存储
   oss:
-    url: https://liellaliyuuxxxxxliyuncs.com/
+    url: https://liellaliyuu.oss-cn-chengdu.aliyuncs.com/
+    endpoint: oss-cn-chengdu.aliyuncs.com
+    bucketName: liellaliyuu
+    accessKeyId: LTAI5tBLQ2VFBRWKBVmqXiBB
+    accesskeySecret: Nwpemnf4zhgvJYOnW6kAvqBeJR0qRF

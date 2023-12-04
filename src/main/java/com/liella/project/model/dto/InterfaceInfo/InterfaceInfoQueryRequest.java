@@ -56,6 +56,10 @@ public class InterfaceInfoQueryRequest extends PageRequest implements Serializab
     private Integer status;
 
     /**
+     * 调用总次数
+     */
+    private Integer totalInvokes;
+    /**
      * 请求类型
      */
     private String method;

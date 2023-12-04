@@ -15,7 +15,14 @@ import java.util.UUID;
 @Slf4j
 public class AliOSSUtils {
  
-
+    @Value("${upload.oss.endpoint}")
+    private String endpoint;
+    //@Value("${aliyun.oss.accessKeyId}")
+    private final String accessKeyId="LTAI5tBLQ2VFBRWKBVmqXiBB";
+    //@Value("${aliyun.oss.accessKeySecret}")
+    private final String accessKeySecret="Nwpemnf4zhgvJYOnW6kAvqBeJR0qRF";
+    //@Value("${aliyun.oss.bucketName}")
+    private String bucketName="liellaliyuu";
  
     /**
      * 实现上传图片到OSS
@@ -31,9 +38,9 @@ public class AliOSSUtils {
  
         //上传文件到 OSS
        // OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-       OSS ossClient = new OSSClientBuilder().build("oss-cnxxxxxxxxxuncs.com",
-               "LTAI5tBLQxxxxxxxxxxmqXiBB",
-               "NwpxxxxxxxxxxxxqBeJR0qRF");
+       OSS ossClient = new OSSClientBuilder().build("oss-cn-chengdu.aliyuncs.com",
+               "LTAI5tBLQ2VFBRWKBVmqXiBB",
+               "Nwpemnf4zhgvJYOnW6kAvqBeJR0qRF");
         ossClient.putObject("liellaliyuu", fileName, inputStream);
         String url ="";
         try {
@@ -43,7 +50,7 @@ public class AliOSSUtils {
             e.printStackTrace();
         }
 
-        //log.info("上传文件到OSS",endpoint,accessKeyId,accessKeySecret,bucketName);
+        log.info("上传文件到OSS",endpoint,accessKeyId,accessKeySecret,bucketName);
         //文件访问路径
         try {
             // 关闭OSSClient。

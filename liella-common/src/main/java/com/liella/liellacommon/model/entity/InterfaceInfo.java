@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
+
 import lombok.Data;
 
 /**
@@ -33,6 +35,7 @@ public class InterfaceInfo implements Serializable {
      * 接口地址
      */
     private String url;
+
 
     /**
      * 请求头
@@ -70,6 +73,10 @@ public class InterfaceInfo implements Serializable {
     private Date createTime;
 
     /**
+     * 调用总次数
+     */
+    private Integer totalInvokes;
+    /**
      * 更新时间
      */
     private Date updateTime;
@@ -82,50 +89,17 @@ public class InterfaceInfo implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
     @Override
-    public boolean equals(Object that) {
-        if (this == that) {
-            return true;
-        }
-        if (that == null) {
-            return false;
-        }
-        if (getClass() != that.getClass()) {
-            return false;
-        }
-        InterfaceInfo other = (InterfaceInfo) that;
-        return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
-            && (this.getDescription() == null ? other.getDescription() == null : this.getDescription().equals(other.getDescription()))
-            && (this.getUrl() == null ? other.getUrl() == null : this.getUrl().equals(other.getUrl()))
-            && (this.getRequestHeader() == null ? other.getRequestHeader() == null : this.getRequestHeader().equals(other.getRequestHeader()))
-            && (this.getResponseHeader() == null ? other.getResponseHeader() == null : this.getResponseHeader().equals(other.getResponseHeader()))
-            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getMethod() == null ? other.getMethod() == null : this.getMethod().equals(other.getMethod()))
-            && (this.getUserId() == null ? other.getUserId() == null : this.getUserId().equals(other.getUserId()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getIsDelete() == null ? other.getIsDelete() == null : this.getIsDelete().equals(other.getIsDelete()));
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InterfaceInfo that = (InterfaceInfo) o;
+        return Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(description, that.description) && Objects.equals(url, that.url) && Objects.equals(requestHeader, that.requestHeader) && Objects.equals(responseHeader, that.responseHeader) && Objects.equals(requestParams, that.requestParams) && Objects.equals(status, that.status) && Objects.equals(method, that.method) && Objects.equals(userId, that.userId) && Objects.equals(createTime, that.createTime) && Objects.equals(totalInvokes, that.totalInvokes) && Objects.equals(updateTime, that.updateTime) && Objects.equals(isDelete, that.isDelete);
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
-        result = prime * result + ((getDescription() == null) ? 0 : getDescription().hashCode());
-        result = prime * result + ((getUrl() == null) ? 0 : getUrl().hashCode());
-        result = prime * result + ((getRequestHeader() == null) ? 0 : getRequestHeader().hashCode());
-        result = prime * result + ((getResponseHeader() == null) ? 0 : getResponseHeader().hashCode());
-        result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
-        result = prime * result + ((getMethod() == null) ? 0 : getMethod().hashCode());
-        result = prime * result + ((getUserId() == null) ? 0 : getUserId().hashCode());
-        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
-        result = prime * result + ((getUpdateTime() == null) ? 0 : getUpdateTime().hashCode());
-        result = prime * result + ((getIsDelete() == null) ? 0 : getIsDelete().hashCode());
-        return result;
+        return Objects.hash(id, name, description, url, requestHeader, responseHeader, requestParams, status, method, userId, createTime, totalInvokes, updateTime, isDelete);
     }
 
     @Override
@@ -146,6 +120,7 @@ public class InterfaceInfo implements Serializable {
         sb.append(", createTime=").append(createTime);
         sb.append(", updateTime=").append(updateTime);
         sb.append(", isDelete=").append(isDelete);
+        sb.append(", totalInvokes=").append(totalInvokes);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
