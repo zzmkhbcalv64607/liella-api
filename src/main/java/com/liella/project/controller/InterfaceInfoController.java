@@ -3,6 +3,7 @@ package com.liella.project.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.liella.liellaclientsdk.client.liellaClient;
 import com.liella.liellacommon.model.entity.InterfaceInfo;
 import com.liella.liellacommon.model.entity.User;
@@ -284,6 +285,7 @@ public class InterfaceInfoController {
     @PostMapping("/invoke")
     public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeRequest,
                                                     HttpServletRequest request) {
+        log.info("invokeInterfaceInfo request:{}", interfaceInfoInvokeRequest);
         if ( interfaceInfoInvokeRequest == null ||  interfaceInfoInvokeRequest.getId()<= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -291,7 +293,19 @@ public class InterfaceInfoController {
         //获取IdRequest中的id
         long id =  interfaceInfoInvokeRequest.getId();
         //获取用户请求参数
-        String userRequestParams = interfaceInfoInvokeRequest.getUserRequestParams();
+        System.out.println(interfaceInfoInvokeRequest.getRequestParams());
+        List<InterfaceInfoInvokeRequest.Field> fieldList = interfaceInfoInvokeRequest.getRequestParams();
+        String requestParams = "{}";
+        Gson gson = new Gson();
+        if (fieldList != null && fieldList.size() > 0) {
+            JsonObject jsonObject = new JsonObject();
+            for (InterfaceInfoInvokeRequest.Field field : fieldList) {
+                jsonObject.addProperty(field.getFieldName(), field.getValue());
+            }
+
+            requestParams = gson.toJson(jsonObject);
+        }
+        String userRequestParams = interfaceInfoInvokeRequest.getRequestParams().toString();
 
         //根据id查询接口信息是否存在
         InterfaceInfo oldInterfaceInfo = InterfaceInfoService.getById(id);
@@ -306,8 +320,11 @@ public class InterfaceInfoController {
         String accessKey = loginUser.getAccessKey();
         String secretKey = loginUser.getSecretKey();
         com.liella.liellaclientsdk.client.liellaClient client = new liellaClient(accessKey, secretKey);
-        Gson gson = new Gson();
-        com.liella.liellaclientsdk.model.User user =gson.fromJson(userRequestParams, com.liella.liellaclientsdk.model.User.class);
+
+        com.liella.liellaclientsdk.model.User user =gson.fromJson(requestParams, com.liella.liellaclientsdk.model.User.class);
+        if (user.getUsername() == null) {
+            return ResultUtils.error(0,"请输入正确的参数");
+        }
         String userNameByPost = client.getUserNameByPost(user);
         return ResultUtils.success(userNameByPost);
     }
