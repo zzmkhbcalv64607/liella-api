@@ -54,8 +54,8 @@ dubbo:
 upload:
   # oss存储
   oss:
-    url: https://liellaliyuu.oss-cn-chengdu.aliyuncs.com/
-    endpoint: oss-cn-chengdu.aliyuncs.com
+    url: https://liellal8888888888888888chengdu.aliyuncs.com/
+    endpoint: oss-cn-8888888888s.com
     bucketName: liellaliyuu
-    accessKeyId: LTAI5tBLQ2VFBRWKBVmqXiBB
-    accesskeySecret: Nwpemnf4zhgvJYOnW6kAvqBeJR0qRF
+    accessKeyId:888888888888888WKBVmqXiBB
+    accesskeySecret: Nwpemn88888888886kAvqBeJR0qRF
