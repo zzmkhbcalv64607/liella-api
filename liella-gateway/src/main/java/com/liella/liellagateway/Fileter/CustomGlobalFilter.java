@@ -190,9 +190,10 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                             //writeWith 是一个异步的方法，这里先缓存数据，等到数据写入之后，再修改响应数据
                             //往返回结果中写入数据
                             return super.writeWith(fluxBody.map(dataBuffer -> {
-                                // 7. 调用成功，接口调用次数 + 1 invokeCount
+                                // 7. 调用成功，接口调用次数 + 1 invokeCount 总调用次数+1
                                 try {
                                     innerUserInterfaceInfoService.invokeCount(interfaceInfoId, userId);
+                                    innerInterfaceInfoService.addInvokeCoint(interfaceInfoId);
                                 } catch (Exception e) {
                                     log.error("invokeCount error", e);
                                 }

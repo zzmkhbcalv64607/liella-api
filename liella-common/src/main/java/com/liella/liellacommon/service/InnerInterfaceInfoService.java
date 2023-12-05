@@ -1,6 +1,5 @@
 package com.liella.liellacommon.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.liella.liellacommon.model.entity.InterfaceInfo;
 
 /**
@@ -9,6 +8,8 @@ import com.liella.liellacommon.model.entity.InterfaceInfo;
 * @createDate 2023-11-08 14:53:54
 */
 public interface InnerInterfaceInfoService  {
+
+    Boolean addInvokeCoint(long interfaceInfoId);
     /**
      * 从数据库中查询接口次数
      * @param interfaceInfoId

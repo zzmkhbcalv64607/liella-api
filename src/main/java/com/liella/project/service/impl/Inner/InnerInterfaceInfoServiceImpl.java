@@ -23,6 +23,28 @@ public class InnerInterfaceInfoServiceImpl implements InnerInterfaceInfoService 
     @Resource
     private UserInterfaceInfoMapper userInterfaceInfoMapper;
 
+    @Override
+    public Boolean addInvokeCoint(long interfaceInfoId) {
+        if (interfaceInfoId <= 0){
+            throw new RuntimeException("interfaceInfoId is null");
+        }
+        InterfaceInfo infoId = interfaceInfoMapper
+                .selectOne(new QueryWrapper<InterfaceInfo>().eq("id", interfaceInfoId));
+        if (infoId == null){
+            throw new RuntimeException("interfaceInfoId is null");
+        }
+        infoId.setTotalInvokes(infoId.getTotalInvokes()+1);
+        try{
+            interfaceInfoMapper.update(infoId,
+                    new QueryWrapper<InterfaceInfo>()
+                            .eq("id", interfaceInfoId));
+        }catch (Exception e){
+            throw new RuntimeException("interfaceInfoId is null");
+        }
+
+        return true;
+    }
+
     /**
      * 从数据库中查询接口次数
      * @param interfaceInfoId 接口id
