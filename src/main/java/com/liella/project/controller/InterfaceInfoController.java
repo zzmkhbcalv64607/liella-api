@@ -7,16 +7,15 @@ import com.google.gson.JsonObject;
 import com.liella.liellaclientsdk.client.liellaClient;
 import com.liella.liellacommon.model.entity.InterfaceInfo;
 import com.liella.liellacommon.model.entity.User;
+import com.liella.liellacommon.model.entity.UserInterfaceInfo;
 import com.liella.project.annotation.AuthCheck;
 import com.liella.project.common.*;
 import com.liella.project.constant.CommonConstant;
 import com.liella.project.exception.BusinessException;
-import com.liella.project.model.dto.InterfaceInfo.InterfaceInfoAddRequest;
-import com.liella.project.model.dto.InterfaceInfo.InterfaceInfoInvokeRequest;
-import com.liella.project.model.dto.InterfaceInfo.InterfaceInfoQueryRequest;
-import com.liella.project.model.dto.InterfaceInfo.InterfaceInfoUpdateRequest;
+import com.liella.project.model.dto.InterfaceInfo.*;
 import com.liella.project.model.enums.InterfaceInfoEnum;
 import com.liella.project.service.InterfaceInfoService;
+import com.liella.project.service.UserInterfaceInfoService;
 import com.liella.project.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +45,8 @@ public class InterfaceInfoController {
     @Resource
     private UserService userService;
 
+    @Resource
+    private UserInterfaceInfoService userInterfaceInfoService;
 
     /**
      * 创建
@@ -329,4 +330,58 @@ public class InterfaceInfoController {
         return ResultUtils.success(userNameByPost);
     }
 
+    /**
+     * 提交接口调用申请请求
+     */
+
+    @PostMapping("/apply")
+    public BaseResponse<Boolean> applyInterfaceInfo(@RequestBody ApplyRequest applyRequest,
+                                                    HttpServletRequest request) {
+        if (applyRequest == null || applyRequest.getUserId()<= 0|| applyRequest.getInterfaceId()<= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        //1. 校验接口对象是否存在
+        //获取IdRequest中的id
+        long id = applyRequest.getInterfaceId();
+        //根据id查询接口信息是否存在
+        InterfaceInfo oldInterfaceInfo = InterfaceInfoService.getById(id);
+
+        if (oldInterfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+
+        //todo 获取用户信息
+        User user = userService.getById(applyRequest.getUserId());
+        //todo 判断用户是否存在
+        if (user == null||user.getId()<=0) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        //todo 判断用户是否已经申请过该接口 如果已经申请过则不允许再次申请
+        UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService
+                .getOne(new QueryWrapper<UserInterfaceInfo>().eq("userId",
+                user.getId()).eq("interfaceInfoId", oldInterfaceInfo.getId()));
+        if (userInterfaceInfo != null) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"您已经申请过该接口");
+        }
+        UserInterfaceInfo info = new UserInterfaceInfo();
+        //todo 为用户分配接口调用权限及次数
+        info.setUserId(user.getId());
+        info.setInterfaceInfoId(oldInterfaceInfo.getId());
+        info.setLeftNum(10);
+        info.setTotalNum(0);
+        info.setStatus(InterfaceInfoEnum.ONLINE.getValue());
+        try {
+            userInterfaceInfoService.save(info);
+        }catch (Exception e){
+            log.error("保存用户接口调用信息失败",e);
+            //throw new BusinessException(ErrorCode.SYSTEM_ERROR,"保存用户接口调用信息失败");
+            return ResultUtils.error(0,"保存用户接口调用信息失败");
+        }
+        //  todo  后续更改为 添加申请记录 申请状态为待审核 只有经过管理员同意才能调用接口
+        //  todo  申请方式为免费试用 则直接给与十次调用机会
+        //todo 更新接口调用申请状态
+        //判断接口是否可以调用
+
+        return ResultUtils.success(true);
+    }
 }

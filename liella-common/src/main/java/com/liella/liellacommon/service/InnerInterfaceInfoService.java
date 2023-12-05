@@ -12,9 +12,10 @@ public interface InnerInterfaceInfoService  {
     /**
      * 从数据库中查询接口次数
      * @param interfaceInfoId
+     * @param userId
      * @return
      */
-    int getInvokeCount(long interfaceInfoId);
+    int getInvokeCount(long interfaceInfoId,Long userId);
 
     /**
      * 从数据库中查询接口是否存在(请求路劲，请求方法)

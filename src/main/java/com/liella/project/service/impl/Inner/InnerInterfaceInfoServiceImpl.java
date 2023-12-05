@@ -25,14 +25,16 @@ public class InnerInterfaceInfoServiceImpl implements InnerInterfaceInfoService 
 
     /**
      * 从数据库中查询接口次数
-     * @param interfaceInfoId
+     * @param interfaceInfoId 接口id
+     *
      * @return
      */
     @Override
-    public int getInvokeCount(long interfaceInfoId) {
+    public int getInvokeCount(long interfaceInfoId ,Long userId) {
         if (interfaceInfoId <= 0){
             throw new RuntimeException("interfaceInfoId is null");
         }
+        new QueryWrapper<InterfaceInfo>().eq("interfaceInfoId",interfaceInfoId).eq("userId",userId);
         UserInterfaceInfo userInterfaceInfo = userInterfaceInfoMapper.selectById(interfaceInfoId);
         return userInterfaceInfo.getLeftNum();
     }

@@ -142,7 +142,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         int invokeCount = 0;
         try {
 
-        invokeCount = innerInterfaceInfoService.getInvokeCount(invokeUser.getId());
+        invokeCount = innerInterfaceInfoService.getInvokeCount(interfaceInfo.getId(),invokeUser.getId());
         }catch (Exception e){
             log.error("接口错误",e);
             return handleNoAuth(response);
