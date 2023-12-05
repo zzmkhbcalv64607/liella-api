@@ -18,11 +18,11 @@ public class AliOSSUtils {
     @Value("${upload.oss.endpoint}")
     private String endpoint;
     //@Value("${aliyun.oss.accessKeyId}")
-    private final String accessKeyId="LTAI5tBLQ2VFBRWKBVmqXiBB";
+    private final String accessKeyId="LTA8888888888888qXiBB";
     //@Value("${aliyun.oss.accessKeySecret}")
-    private final String accessKeySecret="Nwpemnf4zhgvJYOnW6kAvqBeJR0qRF";
+    private final String accessKeySecret="N888888888888888888888R0qRF";
     //@Value("${aliyun.oss.bucketName}")
-    private String bucketName="liellaliyuu";
+    private String bucketName="l88888888uu";
  
     /**
      * 实现上传图片到OSS
@@ -38,9 +38,9 @@ public class AliOSSUtils {
  
         //上传文件到 OSS
        // OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-       OSS ossClient = new OSSClientBuilder().build("oss-cn-chengdu.aliyuncs.com",
-               "LTAI5tBLQ2VFBRWKBVmqXiBB",
-               "Nwpemnf4zhgvJYOnW6kAvqBeJR0qRF");
+       OSS ossClient = new OSSClientBuilder().build("oss-cn8888888888888888888.com",
+               "LTA8888888888qXiBB",
+               "Nwpemnf4888888888888888eJR0qRF");
         ossClient.putObject("liellaliyuu", fileName, inputStream);
         String url ="";
         try {
