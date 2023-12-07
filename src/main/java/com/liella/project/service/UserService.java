@@ -73,9 +73,11 @@ public interface UserService extends IService<User> {
      */
     boolean updateAk(Long id);
 
-//    /**
-//     * 获取验证码
-//     * @return
-//     */
-//    String getCaptcha();
+
+
+    /**
+     * 获取验证码
+     * @return
+     */
+    public void sendCode(String username);
 }

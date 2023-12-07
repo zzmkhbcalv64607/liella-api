@@ -1,23 +1,32 @@
 package com.liella.project.service.impl;
 
+import cn.hutool.captcha.generator.RandomGenerator;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.liella.liellacommon.model.dto.MailDTO;
 import com.liella.liellacommon.model.entity.User;
 import com.liella.project.constant.UserConstant;
 import com.liella.project.common.ErrorCode;
 import com.liella.project.exception.BusinessException;
 import com.liella.project.mapper.UserMapper;
+import com.liella.project.service.EmailService;
+import com.liella.project.service.RedisService;
 import com.liella.project.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -183,7 +192,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (userAccount.length() < 4) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
         }
-        String RCode = redisTemplate.opsForValue().get(CAPTCHA_CACHE_KEY+ userAccount);
+        String RCode = redisTemplate.opsForValue().get(CODE_KEY + userAccount);
         log.info("redis中的验证码为：{}",RCode,code);
         if (RCode==null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码过期");
@@ -239,6 +248,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return this.updateById(user);
         }
         return false;
+    }
+
+    public static final String CAPTCHA = "验证码";
+    public static final Integer CODE_EXPIRE_TIME = 2;
+    public static final String CODE_KEY = "code:";
+    @Autowired
+    private RedisService redisService;
+
+    @Autowired
+    private EmailService emailService;
+    @Override
+    public void sendCode(String username) {
+        Assert.isTrue(checkEmail(username), "请输入正确的邮箱！");
+        RandomGenerator randomGenerator = new RandomGenerator("0123456789", 6);
+        String code = randomGenerator.generate();
+        MailDTO mailDTO = MailDTO.builder()
+                .toEmail(username)
+                .subject(CAPTCHA)
+                .content("您的验证码为 " + code + " 有效期为" + CODE_EXPIRE_TIME + "分钟")
+                .build();
+        // 验证码存入消息队列
+      //  rabbitTemplate.convertAndSend(EMAIL_EXCHANGE, EMAIL_SIMPLE_KEY, mailDTO);
+
+        // 验证码存入redis
+        redisTemplate.opsForValue().set(CODE_KEY + username, code, CODE_EXPIRE_TIME, TimeUnit.MINUTES);
+        //redisService.setObject(CODE_KEY + username, code, CODE_EXPIRE_TIME, TimeUnit.MINUTES);
+        emailService.sendSimpleMail(mailDTO);
+    }
+
+
+    public static boolean checkEmail(String username) {
+        String rule = "^\\w+((-\\w+)|(\\.\\w+))*\\@[A-Za-z0-9]+((\\.|-)[A-Za-z0-9]+)*\\.[A-Za-z0-9]+$";
+        //正则表达式的模式 编译正则表达式
+        Pattern p = Pattern.compile(rule);
+        //正则表达式的匹配器
+        Matcher m = p.matcher(username);
+        //进行正则匹配
+        return m.matches();
     }
 
 }

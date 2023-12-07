@@ -322,7 +322,7 @@ public class UserController {
         userVOPage.setRecords(userVOList);
         return ResultUtils.success(userVOPage);
     }
-    private static String CAPTCHA_CACHE_KEY = "captcha:";
+    private static String CAPTCHA_CACHE_KEY = "code:";
     // getCaptchaUsingGET 获取验正码
     /**
      * 获取验证码
@@ -341,8 +341,9 @@ public class UserController {
         //模拟邮箱发送验证码
         String captcha = RandomUtil.randomNumbers(6);
         try {
+           userService. sendCode(emailAccount);
             // 3. 发送验证码
-            redisTemplate.opsForValue().set(CAPTCHA_CACHE_KEY + emailAccount, captcha, 5, TimeUnit.MINUTES);
+           // redisTemplate.opsForValue().set(CAPTCHA_CACHE_KEY + emailAccount, captcha, 5, TimeUnit.MINUTES);
             log.info("【发送验证码成功】" + emailAccount + "：" + captcha);
             return ResultUtils.success(true);
         } catch (Exception e) {
