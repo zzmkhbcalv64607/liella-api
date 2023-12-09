@@ -352,5 +352,27 @@ public class UserController {
         }
     }
 
+    /**
+     * 签到
+     * @param userID
+     * @return
+     */
+    @PostMapping("/sign")
+    public BaseResponse<String> sign(@RequestBody UpdateUserDetailRequest  userID) {
+        if (userID == null||userID.getId()<=0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return ResultUtils.success(userService.sign(userID.getId()));
+    }
+
+    @GetMapping("/signCount")
+    public BaseResponse<Integer> signCount(long id) {
+        if (id<=0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Integer integer = userService.signCount(id);
+        return ResultUtils.success(integer);
+    }
+
 
 }

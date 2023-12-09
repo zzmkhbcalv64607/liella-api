@@ -3,6 +3,7 @@ package com.liella.project.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.liella.liellacommon.model.entity.User;
+import com.liella.project.common.BaseResponse;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -80,4 +81,13 @@ public interface UserService extends IService<User> {
      * @return
      */
     public void sendCode(String username);
+
+    /**
+     * 签到
+     * @param userID
+     * @return
+     */
+    String sign(Long userID);
+
+    Integer signCount(Long id);
 }

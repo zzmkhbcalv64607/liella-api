@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.liella.liellacommon.model.dto.MailDTO;
 import com.liella.liellacommon.model.entity.User;
+import com.liella.project.common.BaseResponse;
 import com.liella.project.constant.UserConstant;
 import com.liella.project.common.ErrorCode;
 import com.liella.project.exception.BusinessException;
@@ -18,12 +19,16 @@ import com.liella.project.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.BitFieldSubCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,6 +43,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         implements UserService {
+
     private static String CAPTCHA_CACHE_KEY = "captcha:";
     @Resource
     private UserMapper userMapper;
@@ -278,6 +284,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
 
+
+    /**
+     * 验证邮箱
+     * @param username
+     * @return
+     */
     public static boolean checkEmail(String username) {
         String rule = "^\\w+((-\\w+)|(\\.\\w+))*\\@[A-Za-z0-9]+((\\.|-)[A-Za-z0-9]+)*\\.[A-Za-z0-9]+$";
         //正则表达式的模式 编译正则表达式
@@ -286,6 +298,83 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Matcher m = p.matcher(username);
         //进行正则匹配
         return m.matches();
+    }
+
+
+    private static final String USER_SIGN_KEY = "user:sign:";
+
+
+    /**
+     * 签到
+     * @param userID
+     * @return
+     */
+    @Override
+    public String sign(Long userID) {
+        if (userID==null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"参数为空");
+        }
+        //获取当前时间
+        LocalDateTime now = LocalDateTime.now();
+        //3. 拼接key
+        String keySuffix = now.format(DateTimeFormatter.ofPattern(":yyyyMM"));
+        String key = USER_SIGN_KEY + userID + keySuffix;
+        //4. 判断是否已签到
+        Boolean hasKey = redisTemplate.hasKey(key);
+        if (hasKey==true){
+            return "今日已签到";
+        }
+
+        //获取本月是第几天
+        int dayOfMonth = now.getDayOfMonth();
+
+        //5. 写入redis setbit key offset 1
+        Boolean sign = false;
+        try{
+           sign = redisTemplate.opsForValue().setBit(key, dayOfMonth - 1, true);
+        }catch (Exception e){
+            log.error("签到失败",e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"签到失败");
+        }
+
+
+        return sign?"签到成功":"签到失败";
+    }
+
+    @Override
+    public Integer signCount(Long id) {
+        LocalDateTime now = LocalDateTime.now();
+        //3. 拼接key
+        String keySuffix = now.format(DateTimeFormatter.ofPattern(":yyyyMM"));
+        String key = USER_SIGN_KEY + id + keySuffix;
+        //4. 获取今天是本月的第几天
+        int dayOfMonth = now.getDayOfMonth();
+        //5. 获取本月截至今天为止的所有的签到记录，返回的是一个十进制的数字 BITFIELD sign:5:202301 GET u3 0
+        List<Long> result = redisTemplate.opsForValue().bitField(
+                key,
+                BitFieldSubCommands.create()
+                        .get(BitFieldSubCommands.BitFieldType.unsigned(dayOfMonth)).valueAt(0));
+        //没有任务签到结果
+        if (result == null || result.isEmpty()) {
+            return  0;
+        }
+        Long num = result.get(0);
+        if (num == null || num == 0) {
+            return 0;
+        }
+        //6. 循环遍历
+        int count = 0;
+        while (true) {
+            //6.1 让这个数字与1 做与运算，得到数字的最后一个bit位 判断这个数字是否为0
+            if ((num & 1) == 0) {
+                //如果为0，签到结束
+                break;
+            } else {
+                count ++;
+            }
+            num >>>= 1;
+        }
+        return count;
     }
 
 }
